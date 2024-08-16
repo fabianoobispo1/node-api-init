@@ -107,7 +107,7 @@ export const getUserByEmail = (email: string): Promise<User | null> => {
 // Função para buscar um usuário por id
 export const getUserById = (id: string): Promise<User | null> => {
     return new Promise((resolve, reject) => {
-        db.get('SELECT id, nome, email, password_hash, administrador, data_nascimento, created_at FROM users WHERE id = ?', [id], (err: Error | null, row: UserRow) => {
+        db.get('SELECT id, nome, email, password_hash, administrador, data_nascimento, password_hash, created_at FROM users WHERE id = ?', [id], (err: Error | null, row: UserRow) => {
             if (err) {
                 reject(err);
             } else {
@@ -119,7 +119,7 @@ export const getUserById = (id: string): Promise<User | null> => {
                         administrador: row.administrador ? true:false,
                         data_nascimento: row.data_nascimento,
                         created_at: row.created_at,
-                        password_hash: ''
+                        password_hash: row.password_hash
                     });
                 } else {
                     resolve(null);  // Retorna null se não encontrar nenhum usuário
@@ -129,6 +129,36 @@ export const getUserById = (id: string): Promise<User | null> => {
     });
 };
 
+
+// Função para atualizar o password_hash por id
+export const updatePasswordById = (id: string, password: string): Promise<User | null> => {
+    return new Promise((resolve, reject) => {
+        const stmt = db.prepare('UPDATE users SET password_hash = ? WHERE id = ?');
+
+        stmt.run(password, id, function (this: sqlite3.RunResult, err: Error | null) {
+            if (err) {
+                reject(err);
+            } else {
+                // Consulta para obter o usuário recém-adicionado com todos os campos
+                db.get('SELECT id, nome, email, administrador, data_nascimento, created_at FROM users WHERE id = ?', [id], (err: Error | null, row: UserRow) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve({
+                            id: row.id,
+                            nome: row.nome,
+                            email: row.email,
+                            administrador: row.administrador ? true:false,
+                            data_nascimento: row.data_nascimento,
+                            created_at: row.created_at,
+                            password_hash:''
+                        });
+                    }
+                });
+            }
+        });
+    });
+};
 
 // Fechar o banco de dados (opcional)
 export const closeDatabase = (): void => {

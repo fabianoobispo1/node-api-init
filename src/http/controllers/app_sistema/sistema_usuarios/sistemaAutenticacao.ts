@@ -62,8 +62,7 @@ export async function sistemaAutenticacao(app: FastifyInstance) {
                 {},
                 {
                     sign: {
-                        sub: usuario.id,
-                        expiresIn: '7d',
+                        sub: usuario.id
                     },
                 },
             );
