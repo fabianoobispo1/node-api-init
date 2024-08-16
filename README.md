@@ -7,8 +7,14 @@
 * Fastify
 * Prisma
 * zod
+* jwt
+* prisma
 
+## Exemplo
 
+Existe quatro rotas para partir de inicio onde e posivel realizar CRUD,
+
+usnado app_sistema de exemplo
 
 
 ## Contato

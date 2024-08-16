@@ -3,91 +3,52 @@ import fastifyCookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUI from '@fastify/swagger-ui';
+import fastifyView  from '@fastify/view';
+import { env } from '@/env';
+import fastifyJwt from '@fastify/jwt';
 
-//import { env } from '@/env';
-//import fastifyJwt from '@fastify/jwt';
-
-
-import { jsonSchemaTransform, serializerCompiler, validatorCompiler, /* ZodTypeProvider */} from 'fastify-type-provider-zod';
+import { jsonSchemaTransform, serializerCompiler, validatorCompiler} from 'fastify-type-provider-zod';
 import { errorHandler } from './error-handler';
 import { appSistemaRoutes } from './http/controllers/app_sistema/routes';
+import path from 'path';
 
+import sqlite3 from 'sqlite3';
 
-
-/* import { appGymRoutes } from './http/controllers/app_gym/routes';
-import { appFaRoutes } from './http/controllers/app_fa/routes';
-import { errorHandler } from './error-handler';
-import { appGcpRoutes } from './http/controllers/app_gcp/routes';
-import { appToronRoutes } from './http/controllers/app_toron/routes';
- */
 export const app = fastify();
 
-/* export const app = fastify().withTypeProvider<ZodTypeProvider>(); */
-/* 
 app.register(fastifyJwt, {
-    secret: env.JWT_SECRET_GYM,
+    secret: env.JWT_SECRET_SISTEMA,
     cookie:{
-        cookieName:'refreshTokenGym',
+        cookieName:'refreshTokenSistema',
         signed:false        
     },
-    namespace: 'gym',
-    jwtVerify: 'gymVerify',
-    jwtSign: 'gymSign',
+    namespace: 'sistema',
+    jwtVerify: 'sistemaVerify',
+    jwtSign: 'sistemaSign',
     sign:{
-        expiresIn:'10m'
+        expiresIn:env.JWT_EXPIRES_IN_MINUTES+'m'
     }
 });
 
-app.register(fastifyJwt, {
-    secret: env.JWT_SECRET_GCP,
-    cookie:{
-        cookieName:'refreshTokenGcp',
-        signed:false        
-    },
-    namespace: 'gcp',
-    jwtVerify: 'gcpVerify',
-    jwtSign: 'gcpSign',
-    sign:{
-        expiresIn:'10m'
-    }
-});
-
-app.register(fastifyJwt, {
-    secret: env.JWT_SECRET_FA,
-    cookie:{
-        cookieName:'refreshTokenFa',
-        signed:false        
-    },
-    namespace: 'fa',
-    jwtVerify: 'faVerify',
-    jwtSign: 'faSign',
-    sign:{
-        expiresIn:'60m'
-    }
-});
-
-app.register(fastifyJwt, {
-    secret: env.JWT_SECRET_TORON,
-    cookie:{
-        cookieName:'refreshTokenToron',
-        signed:false        
-    },
-    namespace: 'toron',
-    jwtVerify: 'toronVerify',
-    jwtSign: 'toronSign',
-    sign:{
-        expiresIn:'60m'
-    }
-});
- */
 app.register(cors, { 
 
     origin:'*'
 });
+
+//para gerar uma tela inicial estilizada
+app.register(fastifyView, {
+    engine: {
+        ejs: require('ejs')
+    }
+});
+  
 app.get('/', async (request, reply) => {
-    return reply.status(200).send({
+    //para gerar uma tela inicial estilizada
+    return reply.viewAsync('src/index.ejs');
+    //para gerar uma tela inicial em  JSON
+    /*   return reply.status(200).send({
         message: 'REST API, documentação em /docs.' 
-    });
+    }); */
 });
 
 app.register(fastifySwagger, {
@@ -111,11 +72,39 @@ app.setSerializerCompiler(serializerCompiler);
 
 app.register(fastifyCookie);
 
-/* app.register(appToronRoutes)
-app.register(appFaRoutes);
-app.register(appGcpRoutes)
-app.register(appGymRoutes); */
-
 app.register(appSistemaRoutes);
 
 app.setErrorHandler(errorHandler);
+
+
+//solucao para utilizar sqlite3 equanto o prisma esta desativado 
+// Configura o banco de dados SQLite
+const dbPath = path.resolve(__dirname+'/lib', 'test.db');
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+        app.log.error('Erro ao abrir o banco de dados:', err.message);
+    } else {
+        app.log.info('Conectado ao banco de dados SQLite.');
+    }
+});
+// Cria a tabela de exemplo
+db.serialize(() => {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS users (
+            id TEXT NOT NULL,
+            nome TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            administrador BOOLEAN NOT NULL DEFAULT false,
+            password_hash TEXT NOT NULL,
+            data_nascimento TIMESTAMP(3) ,
+            created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+    `, (err) => {
+        if (err) {
+            app.log.error('Erro ao criar tabela:', err.message);
+        } else {
+            app.log.info('Tabela "users" criada com sucesso.');
+        }
+    });
+});
+

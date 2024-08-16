@@ -5,10 +5,8 @@ import { z }  from 'zod';
 //logo a abixo e possivel padronizar as variaveis do arquivo .env e caso precise deixr um valor default 
 const envSchema = z.object({
     NODE_ENV: z.enum(['dev', 'test', 'production']).default('dev'),
-    /* JWT_SECRET_GYM: z.string(),
-    JWT_SECRET_FA: z.string(),
-    JWT_SECRET_GCP: z.string(),
-    JWT_SECRET_TORON: z.string(), */
+    JWT_SECRET_SISTEMA: z.string(),
+    JWT_EXPIRES_IN_MINUTES: z.string(),
     PORT: z.coerce.number().default(3000)
 });
 
@@ -24,3 +22,4 @@ if( _env.success === false) {
 
 //e casso de tudo certo ele exporta para ser usado em outros lugares 
 export const env = _env.data;
+

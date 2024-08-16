@@ -2,18 +2,18 @@ import { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
 
-export async function sistemaUsuarioListar(app: FastifyInstance) {
+export async function sistemaModeloListar(app: FastifyInstance) {
     app
         .withTypeProvider<ZodTypeProvider>()
-        .get('/sistema/usuario/listar',{
+        .get('/sistema/modelo/listar',{
             
             schema: {
-                summary: 'Lista usuarios.',
-                tags: ['Sistema: Usuarios'],         
+                summary: 'Lista informaçoes.',
+                tags: ['Sistema: Modelo'],         
                 
                 response: {
                     201: z.object({
-                        faUsuario: z.object({
+                        sistemaModelo: z.object({
                             id: z.number()
                             
                         })
@@ -23,11 +23,11 @@ export async function sistemaUsuarioListar(app: FastifyInstance) {
         }, async (request, reply) => {
       
           
-
-            const faUsuario =  {id: 1};
+            //logica para buscar informacao
+            const sistemaModelo =  {id: 1};
   
                 
-            return reply.status(201).send({faUsuario});
+            return reply.status(201).send({sistemaModelo});
 
         });
 }

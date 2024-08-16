@@ -1,7 +1,9 @@
 import { FastifyInstance } from 'fastify';
-import { faUsuarioRoutes } from './sistemaUsuario/routes';
+import { sistemaModeloRoutes } from './sistema_Modelo/routes';
+import { sistemaUsuarioRoutes } from './sistema_usuarios/routes';
 
 
 export async function appSistemaRoutes(app: FastifyInstance) {
-    app.register(faUsuarioRoutes);
+    app.register(sistemaModeloRoutes);
+    app.register(sistemaUsuarioRoutes);
 }
