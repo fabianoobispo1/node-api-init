@@ -43,12 +43,10 @@ app.register(fastifyView, {
 });
   
 app.get('/', async (request, reply) => {
-    //para gerar uma tela inicial estilizada
-    return reply.viewAsync('src/index.ejs');
     //para gerar uma tela inicial em  JSON
-    /*   return reply.status(200).send({
+    return reply.status(200).send({
         message: 'REST API, documentação em /docs.' 
-    }); */
+    });
 });
 
 app.register(fastifySwagger, {
